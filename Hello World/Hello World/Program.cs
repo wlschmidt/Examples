@@ -10,7 +10,13 @@ namespace Hello_World
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            if (args.Length == 0)
+                Console.WriteLine("Hello World!");
+            else
+            {
+                foreach (string s in args)
+                    Console.WriteLine("Hello {0}", s);
+            }
             Console.ReadLine();
         }
     }
