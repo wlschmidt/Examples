@@ -17,6 +17,10 @@ namespace Hello_World
                 foreach (string s in args)
                     Console.WriteLine("Hello {0}", s);
             }
+            for (int x = 0; x < 100; x++)
+            {
+                //yay for pointless loops
+            }
             Console.ReadLine();
         }
     }
