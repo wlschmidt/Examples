@@ -41,6 +41,9 @@ local.properties
 *.user
 *.sln.docstates
 
+# Windows store key files
+*.pfx
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
