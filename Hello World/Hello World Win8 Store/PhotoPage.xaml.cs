@@ -19,9 +19,9 @@ namespace Hello_World_Win8_Store
     /// <summary>
     /// A basic page that provides characteristics common to most applications.
     /// </summary>
-    public sealed partial class MainPage : Hello_World_Win8_Store.Common.LayoutAwarePage
+    public sealed partial class PhotoPage : Hello_World_Win8_Store.Common.LayoutAwarePage
     {
-        public MainPage()
+        public PhotoPage()
         {
             this.InitializeComponent();
         }
@@ -37,15 +37,6 @@ namespace Hello_World_Win8_Store
         /// session.  This will be null the first time a page is visited.</param>
         protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
-            if (pageState != null && pageState.ContainsKey("greetingOutputText"))
-            {
-                greetingOutput.Text = pageState["greetingOutputText"].ToString();
-            }
-            Windows.Storage.ApplicationDataContainer roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
-            if (roamingSettings.Values.ContainsKey("userName"))
-            {
-                nameInput.Text = roamingSettings.Values["userName"].ToString();
-            }
         }
 
         /// <summary>
@@ -56,26 +47,6 @@ namespace Hello_World_Win8_Store
         /// <param name="pageState">An empty dictionary to be populated with serializable state.</param>
         protected override void SaveState(Dictionary<String, Object> pageState)
         {
-            pageState["greetingOutputText"] = greetingOutput.Text;
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            greetingOutput.Text = "Hello, " + nameInput.Text + "!";
-        }
-
-        private void NameInput_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            Windows.Storage.ApplicationDataContainer roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
-            roamingSettings.Values["userName"] = nameInput.Text;
-        }
-
-        private void photoPageButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.Frame != null)
-            {
-                this.Frame.Navigate(typeof(PhotoPage));
-            }
         }
     }
 }
