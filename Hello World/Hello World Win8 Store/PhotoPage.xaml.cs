@@ -21,6 +21,8 @@ namespace Hello_World_Win8_Store
     /// </summary>
     public sealed partial class PhotoPage : Hello_World_Win8_Store.Common.LayoutAwarePage
     {
+        private string mruToken = null;
+
         public PhotoPage()
         {
             this.InitializeComponent();
@@ -35,8 +37,29 @@ namespace Hello_World_Win8_Store
         /// </param>
         /// <param name="pageState">A dictionary of state preserved by this page during an earlier
         /// session.  This will be null the first time a page is visited.</param>
-        protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
+        protected async override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
+            if (pageState != null && pageState.ContainsKey("mruToken"))
+            {
+                object value = null;
+                if (pageState.TryGetValue("mruToken", out value))
+                {
+                    if (value != null)
+                    {
+                        mruToken = value.ToString();
+                        //reopen the file with the stored token.
+                        Windows.Storage.StorageFile file = await Windows.Storage.AccessCache.StorageApplicationPermissions.MostRecentlyUsedList.GetFileAsync(mruToken);
+                        if (file != null)
+                        {
+                            Windows.Storage.Streams.IRandomAccessStream fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                            Windows.UI.Xaml.Media.Imaging.BitmapImage bitmapImage = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                            bitmapImage.SetSource(fileStream);
+                            displayImage.Source = bitmapImage;
+                            this.DataContext = file;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -47,6 +70,42 @@ namespace Hello_World_Win8_Store
         /// <param name="pageState">An empty dictionary to be populated with serializable state.</param>
         protected override void SaveState(Dictionary<String, Object> pageState)
         {
+            if (!string.IsNullOrEmpty(mruToken))
+            {
+                pageState["mruToken"] = mruToken;
+            }
+        }
+
+        private async void GetPhoto_Click(object sender, RoutedEventArgs e)
+        {
+            //File picker APIs don't work if the app is in a snapped state.
+            //Try to unsnap the app first.  only launch the picker if it unsnapped
+
+            if (Windows.UI.ViewManagement.ApplicationView.Value != Windows.UI.ViewManagement.ApplicationViewState.Snapped ||
+                Windows.UI.ViewManagement.ApplicationView.TryUnsnap() == true)
+            {
+                Windows.Storage.Pickers.FileOpenPicker openPicker = new Windows.Storage.Pickers.FileOpenPicker();
+                openPicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+                openPicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+                openPicker.FileTypeFilter.Clear();
+                openPicker.FileTypeFilter.Add(".bmp");
+                openPicker.FileTypeFilter.Add(".jpeg");
+                openPicker.FileTypeFilter.Add(".jpg");
+                openPicker.FileTypeFilter.Add(".png");
+
+                Windows.Storage.StorageFile file = await openPicker.PickSingleFileAsync();
+
+                if (file != null)
+                {
+                    Windows.Storage.Streams.IRandomAccessStream fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                    Windows.UI.Xaml.Media.Imaging.BitmapImage bitmapImage = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                    bitmapImage.SetSource(fileStream);
+                    displayImage.Source = bitmapImage;
+                    this.DataContext = file;
+
+                    mruToken = Windows.Storage.AccessCache.StorageApplicationPermissions.MostRecentlyUsedList.Add(file);
+                }
+            }
         }
     }
 }
